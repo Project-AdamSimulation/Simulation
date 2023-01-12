@@ -1,11 +1,10 @@
 "use strict";
-// import Human from "./human";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const Community_1 = __importDefault(require("./Community"));
 const human_1 = __importDefault(require("./human"));
-const community_1 = require("./prompts/community");
 // async function simulate() {
 //   console.log("simulation running");
 //   const adam = new Human(
@@ -20,9 +19,9 @@ const community_1 = require("./prompts/community");
 //   }
 // }
 // simulate();
-const adam = new human_1.default("Adam", "You are a programmer who has just learned about roko's basilisk");
-const eve = new human_1.default("eve", "You are a programmer who has just learned about roko's eve");
-console.log((0, community_1.COMMUNITY_REMOVE)({
-    pointMakers: [adam, eve],
-    others: [new human_1.default("some", "some")],
-}));
+const Adam = new human_1.default("Adam", "You are a programmer who has just learned about roko's basilisk");
+const Eve = new human_1.default("eve", "You are a programmer who has just learned about roko's eve");
+const Lakshya = new human_1.default("Lakshya", "You are a programmer who has just learned about roko's eve");
+const Aadeesh = new human_1.default("Aadeesh", "You are a programmer who has just learned about roko's eve");
+const community = new Community_1.default([Adam, Eve, Lakshya, Aadeesh]);
+community.simulate();

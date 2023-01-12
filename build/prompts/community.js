@@ -28,15 +28,9 @@ const COMMUNITY_ADD = ({ members, aware, }) => members.length == 1
         : (0, mapList_1.mapList)(aware.map((member) => member.name)) +
             (aware.length == 1 ? " is aware" : " are aware")} of the previous conversations or context.\n\n`;
 exports.COMMUNITY_ADD = COMMUNITY_ADD;
-const COMMUNITY_REMOVE = ({ pointMakers, others, }) => pointMakers.length == 1
-    ? `${pointMakers[0].name} makes a point to ${others.length == 0
-        ? "leave the conversation in the next dialogue\n\n"
-        : `make ${(0, mapList_1.mapList)(others.map((member) => member.name))} leave the conversation in the next dialogue\n\n`}`
-    : `${(0, mapList_1.mapList)(pointMakers.map((member) => member.name))} make a point to ${others.length == 0
-        ? "leave the conversation in the next dialogue\n\n"
-        : `make ${(0, mapList_1.mapList)(others.map((member) => member.name))} leave the conversation in the next dialogue\n\n`}`;
+const COMMUNITY_REMOVE = ({ pointMaker, others, }) => `${pointMaker.name} makes a point to ${others.length == 0
+    ? "leave the conversation in the next dialogue\n\n"
+    : `make himself and ${(0, mapList_1.mapList)(others.map((member) => member.name))} leave the conversation in the next dialogue\n\n`}`;
 exports.COMMUNITY_REMOVE = COMMUNITY_REMOVE;
-const COMMUNITY_CHANGE_SUBJECT = ({ changers }) => changers.length == 1
-    ? `${changers[0].name} changes the subject of the conversation`
-    : `${(0, mapList_1.mapList)(changers.map((member) => member.name))} change the subject of the conversation`;
+const COMMUNITY_CHANGE_SUBJECT = ({ changer }) => `${changer.name} changes the subject of the conversation`;
 exports.COMMUNITY_CHANGE_SUBJECT = COMMUNITY_CHANGE_SUBJECT;

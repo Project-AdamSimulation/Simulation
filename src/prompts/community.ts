@@ -67,31 +67,19 @@ export const COMMUNITY_ADD = ({
       } of the previous conversations or context.\n\n`;
 
 export const COMMUNITY_REMOVE = ({
-  pointMakers,
+  pointMaker,
   others,
 }: {
-  pointMakers: Human[];
+  pointMaker: Human;
   others: Human[];
 }) =>
-  pointMakers.length == 1
-    ? `${pointMakers[0].name} makes a point to ${
-        others.length == 0
-          ? "leave the conversation in the next dialogue\n\n"
-          : `make ${mapList(
-              others.map((member) => member.name)
-            )} leave the conversation in the next dialogue\n\n`
-      }`
-    : `${mapList(pointMakers.map((member) => member.name))} make a point to ${
-        others.length == 0
-          ? "leave the conversation in the next dialogue\n\n"
-          : `make ${mapList(
-              others.map((member) => member.name)
-            )} leave the conversation in the next dialogue\n\n`
-      }`;
+  `${pointMaker.name} makes a point to ${
+    others.length == 0
+      ? "leave the conversation in the next dialogue\n\n"
+      : `make himself and ${mapList(
+          others.map((member) => member.name)
+        )} leave the conversation in the next dialogue\n\n`
+  }`;
 
-export const COMMUNITY_CHANGE_SUBJECT = ({ changers }: { changers: Human[] }) =>
-  changers.length == 1
-    ? `${changers[0].name} changes the subject of the conversation`
-    : `${mapList(
-        changers.map((member) => member.name)
-      )} change the subject of the conversation`;
+export const COMMUNITY_CHANGE_SUBJECT = ({ changer }: { changer: Human }) =>
+  `${changer.name} changes the subject of the conversation`;

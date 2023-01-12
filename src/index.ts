@@ -1,12 +1,5 @@
-// import Human from "./human";
-
+import Commmunity from "./Community";
 import Human from "./human";
-import {
-  COMMUNITY_ADD,
-  COMMUNITY_INIT,
-  COMMUNITY_ONGOING,
-  COMMUNITY_REMOVE,
-} from "./prompts/community";
 
 // async function simulate() {
 //   console.log("simulation running");
@@ -24,19 +17,26 @@ import {
 
 // simulate();
 
-const adam = new Human(
+const Adam = new Human(
   "Adam",
   "You are a programmer who has just learned about roko's basilisk"
 );
 
-const eve = new Human(
+const Eve = new Human(
   "eve",
   "You are a programmer who has just learned about roko's eve"
 );
 
-console.log(
-  COMMUNITY_REMOVE({
-    pointMakers: [adam, eve],
-    others: [new Human("some", "some")],
-  })
+const Lakshya = new Human(
+  "Lakshya",
+  "You are a programmer who has just learned about roko's eve"
 );
+
+const Aadeesh = new Human(
+  "Aadeesh",
+  "You are a programmer who has just learned about roko's eve"
+);
+
+const community = new Commmunity([Adam, Eve, Lakshya, Aadeesh]);
+
+community.simulate();
