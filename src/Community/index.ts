@@ -1,5 +1,5 @@
 import openai from "../config/openAI";
-import { BATCH_SIZE, TALK_BATCH_SIZE } from "../constants";
+import { BATCH_SIZE, TALK_BATCH_SIZE, TALK_DELAY } from "../constants";
 import { randomSelection } from "../entropy/randomSelection";
 import Human from "../human";
 import {
@@ -10,13 +10,19 @@ import {
   COMMUNITY_REMOVE,
 } from "../prompts/community";
 import { Actions } from "./actions";
+import { delay } from "./helpers/delay";
 import { generateRandomTopic } from "./helpers/genRandTopic";
+
+const NATURAL_ACTIONS = [Actions.TALK];
+const POSSIBLE_ACTIONS = [Actions.ADD, Actions.REMOVE, Actions.CHANGE];
 
 class Commmunity {
   private members: Human[];
   private possibleMembers: Human[];
   private prompt: string = "";
   private conversationHistory: string[] = [];
+  private naturalAction = true;
+  private naturalActionCount = 0;
 
   public constructor(
     possibleMembers: Human[],
@@ -48,7 +54,10 @@ class Commmunity {
   // First layer between open ai and the simulation
 
   private async generateResponse() {
-    this.handleBatchControl();
+    // logging prompt
+    // console.log("------------- Prompt ---------------");
+    // console.log(this.prompt);
+    // console.log("------------------------------------");
     const response = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: this.prompt,
@@ -80,15 +89,22 @@ class Commmunity {
   // Actions
 
   public async talk(speaker: Human) {
+    this.handleBatchControl();
+    const prevGen = this.prompt;
     this.prompt = this.prompt + `${speaker.name}:`;
     const dialogue = await this.generateResponse();
-    this.prompt = this.prompt + ` ${dialogue}\n\n`;
+    if (dialogue !== "") {
+      this.prompt = this.prompt + ` ${dialogue}\n\n`;
 
-    this.conversationHistory.push(`${speaker.name}: ${dialogue}\n\n`);
-    console.log(`${speaker.name}: ${dialogue}`);
+      this.conversationHistory.push(`${speaker.name}: ${dialogue}`);
+      console.log(`${speaker.name}: ${dialogue}\n`);
+
+      // delay
+      await delay(TALK_DELAY);
+    } else this.prompt = prevGen;
   }
 
-  public add(members: Human[], aware: Human[]) {
+  public async add(members: Human[], aware: Human[]) {
     this.members.push(...members);
     this.prompt =
       this.prompt +
@@ -97,10 +113,10 @@ class Commmunity {
         aware: aware,
       });
     const [speaker] = randomSelection(members, 1);
-    this.talk(speaker);
+    await this.talk(speaker);
   }
 
-  public remove(pointMaker: Human, others: Human[]) {
+  public async remove(pointMaker: Human, others: Human[]) {
     this.members.filter(
       (member) =>
         member.name != pointMaker.name &&
@@ -112,50 +128,88 @@ class Commmunity {
         pointMaker: pointMaker,
         others: others,
       });
-    this.talk(pointMaker);
+    await this.talk(pointMaker);
   }
 
-  public changeTopic(changer: Human) {
+  public async changeTopic(changer: Human) {
     this.prompt =
       this.prompt +
       COMMUNITY_CHANGE_SUBJECT({
         changer: changer,
       });
-    this.talk(changer);
+    await this.talk(changer);
   }
 
-  public simulate() {
-    if (this.prompt === "") this.initRandomTopic();
-    while (true) {
-      // Randomly select a action
-      const [action] = randomSelection(Object.values(Actions), 1);
+  public async simulate() {
+    if (this.prompt === "") await this.initRandomTopic();
+    while (this.members.length != 0) {
+      console.log("members:", this.members.length);
+      // Randomly select an action
+      const [action] = this.naturalAction
+        ? randomSelection(NATURAL_ACTIONS, 1)
+        : randomSelection(POSSIBLE_ACTIONS, 1);
+
+      // this.naturalAction
+      //   ? console.log("natural action", action)
+      //   : console.log("possible action", action);
+
+      if (this.naturalAction) {
+        this.naturalActionCount++;
+        if (this.naturalActionCount == 4) {
+          this.naturalAction = false;
+          this.naturalActionCount = 0;
+        }
+      }
+
+      if (!this.naturalAction && !NATURAL_ACTIONS.includes(action))
+        this.naturalAction = true;
 
       switch (action) {
         case Actions.TALK:
           for (let i = 0; i < TALK_BATCH_SIZE; i++) {
             const [speaker] = randomSelection(this.members, 1);
-            this.talk(speaker);
+            await this.talk(speaker);
           }
           break;
 
         case Actions.ADD:
-          const members = randomSelection(this.possibleMembers);
+          // console.log("Adding ....");
+          const potentialMembers = [];
+
+          // TODO: to be optimized
+          for (let possibleMember of this.possibleMembers) {
+            if (
+              !this.members.some(
+                (member) => member.name === possibleMember.name
+              )
+            )
+              potentialMembers.push(possibleMember);
+          }
+
+          // TODO: to be optimized, implement removal of Addition action from
+          // POSSIBLE_ACTIONS here, also make sure to add Addition action
+          // when potentialMembers are more than 0
+          if (potentialMembers.length === 0) break;
+
+          const members = randomSelection(potentialMembers);
           const aware = randomSelection(members);
-          this.add(members, aware);
+          await this.add(members, aware);
           break;
 
         case Actions.REMOVE:
+          // console.log("Removing ....");
           const others = randomSelection(this.members);
           // no need to randomly generate a pointMaker
           // randomness is already introduced in computing others
           // further randomness to generate a pointmaker doesn't make sense
           const pointMaker = others.shift();
-          this.remove(pointMaker!, others);
+          await this.remove(pointMaker!, others);
           break;
 
         case Actions.CHANGE:
+          // console.log("Changing ....");
           const [changer] = randomSelection(this.members, 1);
-          this.changeTopic(changer);
+          await this.changeTopic(changer);
           break;
       }
     }

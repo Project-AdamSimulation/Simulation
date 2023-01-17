@@ -3,6 +3,6 @@ export const OPENAI_API_KEY =
 
 export const BATCH_SIZE = 4;
 
-export const TALK_BATCH_SIZE = 4;
+export const TALK_BATCH_SIZE = 1;
 
-export const TALK_DELAY = 1000; // ms
+export const TALK_DELAY = 5000; // ms

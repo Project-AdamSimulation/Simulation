@@ -17,26 +17,58 @@ import Human from "./human";
 
 // simulate();
 
-const Adam = new Human(
-  "Adam",
-  "You are a programmer who has just learned about roko's basilisk"
-);
-
-const Eve = new Human(
-  "eve",
-  "You are a programmer who has just learned about roko's eve"
-);
-
 const Lakshya = new Human(
   "Lakshya",
-  "You are a programmer who has just learned about roko's eve"
+  [
+    "Lakshya likes chicks",
+    "Lakshya is very determined about his work",
+    "Lakshya can cook",
+    "Lakshya has OCD",
+  ]
+    .map((desc, i) => `${i + 1}. ${desc}`)
+    .join("\n")
 );
 
 const Aadeesh = new Human(
   "Aadeesh",
-  "You are a programmer who has just learned about roko's eve"
+  [
+    "Aadeesh's nickname is Panda",
+    "Aadeesh likes comic books",
+    "Aadeesh is funny",
+    "Aadeesh can sometimes be lazy",
+  ]
+    .map((desc, i) => `${i + 1}. ${desc}`)
+    .join("\n")
 );
 
-const community = new Commmunity([Adam, Eve, Lakshya, Aadeesh]);
+const Tathagat = new Human(
+  "Tathagat",
+  [
+    "Tathagat is a very secretive individual",
+    "Tathagat watches and plays every sport",
+    "Tathagat can sometimes be stubborn",
+    "Tathagat likes punjabi music",
+  ]
+    .map((desc, i) => `${i + 1}. ${desc}`)
+    .join("\n")
+);
+
+const Devansh = new Human(
+  "Devansh",
+  [
+    "Devansh is a sigma male",
+    "Devansh is punctual",
+    "Devansh is a one girl man",
+    "Devansh sings well",
+  ]
+    .map((desc, i) => `${i + 1}. ${desc}`)
+    .join("\n")
+);
+
+const community = new Commmunity(
+  [Lakshya, Aadeesh, Tathagat, Devansh],
+  [Lakshya, Aadeesh],
+  "meaningful relationships or just hookups"
+);
 
 community.simulate();

@@ -17,11 +17,16 @@ const constants_1 = require("../constants");
 const randomSelection_1 = require("../entropy/randomSelection");
 const community_1 = require("../prompts/community");
 const actions_1 = require("./actions");
+const delay_1 = require("./helpers/delay");
 const genRandTopic_1 = require("./helpers/genRandTopic");
+const NATURAL_ACTIONS = [actions_1.Actions.TALK];
+const POSSIBLE_ACTIONS = [actions_1.Actions.ADD, actions_1.Actions.REMOVE, actions_1.Actions.CHANGE];
 class Commmunity {
     constructor(possibleMembers, initialMembers, topic) {
         this.prompt = "";
         this.conversationHistory = [];
+        this.naturalAction = true;
+        this.naturalActionCount = 0;
         this.possibleMembers = possibleMembers;
         if (!initialMembers)
             initialMembers = (0, randomSelection_1.randomSelection)(possibleMembers);
@@ -45,7 +50,10 @@ class Commmunity {
     // First layer between open ai and the simulation
     generateResponse() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.handleBatchControl();
+            // logging prompt
+            // console.log("------------- Prompt ---------------");
+            // console.log(this.prompt);
+            // console.log("------------------------------------");
             const response = yield openAI_1.default.createCompletion({
                 model: "text-davinci-003",
                 prompt: this.prompt,
@@ -78,75 +86,120 @@ class Commmunity {
     // Actions
     talk(speaker) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.handleBatchControl();
+            const prevGen = this.prompt;
             this.prompt = this.prompt + `${speaker.name}:`;
             const dialogue = yield this.generateResponse();
-            this.prompt = this.prompt + ` ${dialogue}\n\n`;
-            this.conversationHistory.push(`${speaker.name}: ${dialogue}\n\n`);
-            console.log(`${speaker.name}: ${dialogue}`);
+            if (dialogue !== "") {
+                this.prompt = this.prompt + ` ${dialogue}\n\n`;
+                this.conversationHistory.push(`${speaker.name}: ${dialogue}`);
+                console.log(`${speaker.name}: ${dialogue}\n`);
+                // delay
+                yield (0, delay_1.delay)(constants_1.TALK_DELAY);
+            }
+            else
+                this.prompt = prevGen;
         });
     }
     add(members, aware) {
-        this.members.push(...members);
-        this.prompt =
-            this.prompt +
-                (0, community_1.COMMUNITY_ADD)({
-                    members: members,
-                    aware: aware,
-                });
-        const [speaker] = (0, randomSelection_1.randomSelection)(members, 1);
-        this.talk(speaker);
+        return __awaiter(this, void 0, void 0, function* () {
+            this.members.push(...members);
+            this.prompt =
+                this.prompt +
+                    (0, community_1.COMMUNITY_ADD)({
+                        members: members,
+                        aware: aware,
+                    });
+            const [speaker] = (0, randomSelection_1.randomSelection)(members, 1);
+            yield this.talk(speaker);
+        });
     }
     remove(pointMaker, others) {
-        this.members.filter((member) => member.name != pointMaker.name &&
-            others.every((other) => member.name != other.name));
-        this.prompt =
-            this.prompt +
-                (0, community_1.COMMUNITY_REMOVE)({
-                    pointMaker: pointMaker,
-                    others: others,
-                });
-        this.talk(pointMaker);
+        return __awaiter(this, void 0, void 0, function* () {
+            this.members.filter((member) => member.name != pointMaker.name &&
+                others.every((other) => member.name != other.name));
+            this.prompt =
+                this.prompt +
+                    (0, community_1.COMMUNITY_REMOVE)({
+                        pointMaker: pointMaker,
+                        others: others,
+                    });
+            yield this.talk(pointMaker);
+        });
     }
     changeTopic(changer) {
-        this.prompt =
-            this.prompt +
-                (0, community_1.COMMUNITY_CHANGE_SUBJECT)({
-                    changer: changer,
-                });
-        this.talk(changer);
+        return __awaiter(this, void 0, void 0, function* () {
+            this.prompt =
+                this.prompt +
+                    (0, community_1.COMMUNITY_CHANGE_SUBJECT)({
+                        changer: changer,
+                    });
+            yield this.talk(changer);
+        });
     }
     simulate() {
-        if (this.prompt === "")
-            this.initRandomTopic();
-        while (true) {
-            // Randomly select a action
-            const [action] = (0, randomSelection_1.randomSelection)(Object.values(actions_1.Actions), 1);
-            switch (action) {
-                case actions_1.Actions.TALK:
-                    for (let i = 0; i < constants_1.TALK_BATCH_SIZE; i++) {
-                        const [speaker] = (0, randomSelection_1.randomSelection)(this.members, 1);
-                        this.talk(speaker);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.prompt === "")
+                yield this.initRandomTopic();
+            while (this.members.length != 0) {
+                console.log("members:", this.members.length);
+                // Randomly select an action
+                const [action] = this.naturalAction
+                    ? (0, randomSelection_1.randomSelection)(NATURAL_ACTIONS, 1)
+                    : (0, randomSelection_1.randomSelection)(POSSIBLE_ACTIONS, 1);
+                // this.naturalAction
+                //   ? console.log("natural action", action)
+                //   : console.log("possible action", action);
+                if (this.naturalAction) {
+                    this.naturalActionCount++;
+                    if (this.naturalActionCount == 4) {
+                        this.naturalAction = false;
+                        this.naturalActionCount = 0;
                     }
-                    break;
-                case actions_1.Actions.ADD:
-                    const members = (0, randomSelection_1.randomSelection)(this.possibleMembers);
-                    const aware = (0, randomSelection_1.randomSelection)(members);
-                    this.add(members, aware);
-                    break;
-                case actions_1.Actions.REMOVE:
-                    const others = (0, randomSelection_1.randomSelection)(this.members);
-                    // no need to randomly generate a pointMaker
-                    // randomness is already introduced in computing others
-                    // further randomness to generate a pointmaker doesn't make sense
-                    const pointMaker = others.shift();
-                    this.remove(pointMaker, others);
-                    break;
-                case actions_1.Actions.CHANGE:
-                    const [changer] = (0, randomSelection_1.randomSelection)(this.members, 1);
-                    this.changeTopic(changer);
-                    break;
+                }
+                if (!this.naturalAction && !NATURAL_ACTIONS.includes(action))
+                    this.naturalAction = true;
+                switch (action) {
+                    case actions_1.Actions.TALK:
+                        for (let i = 0; i < constants_1.TALK_BATCH_SIZE; i++) {
+                            const [speaker] = (0, randomSelection_1.randomSelection)(this.members, 1);
+                            yield this.talk(speaker);
+                        }
+                        break;
+                    case actions_1.Actions.ADD:
+                        // console.log("Adding ....");
+                        const potentialMembers = [];
+                        // TODO: to be optimized
+                        for (let possibleMember of this.possibleMembers) {
+                            if (!this.members.some((member) => member.name === possibleMember.name))
+                                potentialMembers.push(possibleMember);
+                        }
+                        // TODO: to be optimized, implement removal of Addition action from
+                        // POSSIBLE_ACTIONS here, also make sure to add Addition action
+                        // when potentialMembers are more than 0
+                        if (potentialMembers.length === 0)
+                            break;
+                        const members = (0, randomSelection_1.randomSelection)(potentialMembers);
+                        const aware = (0, randomSelection_1.randomSelection)(members);
+                        yield this.add(members, aware);
+                        break;
+                    case actions_1.Actions.REMOVE:
+                        // console.log("Removing ....");
+                        const others = (0, randomSelection_1.randomSelection)(this.members);
+                        // no need to randomly generate a pointMaker
+                        // randomness is already introduced in computing others
+                        // further randomness to generate a pointmaker doesn't make sense
+                        const pointMaker = others.shift();
+                        yield this.remove(pointMaker, others);
+                        break;
+                    case actions_1.Actions.CHANGE:
+                        // console.log("Changing ....");
+                        const [changer] = (0, randomSelection_1.randomSelection)(this.members, 1);
+                        yield this.changeTopic(changer);
+                        break;
+                }
             }
-        }
+        });
     }
 }
 exports.default = Commmunity;

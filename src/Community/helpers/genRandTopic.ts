@@ -14,7 +14,7 @@ export const generateRandomTopic = async () => {
   });
   if (response.status == 200) {
     const topic = response.data.choices[0].text;
-    return topic!;
+    return topic!.substring(1);
   } else {
     throw Error(`Failed due to Response Status: ${response.status}`);
   }
