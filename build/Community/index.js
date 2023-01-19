@@ -19,6 +19,7 @@ const community_1 = require("../prompts/community");
 const actions_1 = require("./actions");
 const delay_1 = require("./helpers/delay");
 const genRandTopic_1 = require("./helpers/genRandTopic");
+const logger_1 = require("./helpers/logger");
 const NATURAL_ACTIONS = [actions_1.Actions.TALK];
 const POSSIBLE_ACTIONS = [actions_1.Actions.ADD, actions_1.Actions.REMOVE, actions_1.Actions.CHANGE];
 class Commmunity {
@@ -69,6 +70,7 @@ class Commmunity {
                 return dialogue.substring(1);
             }
             else {
+                logger_1.logger.error(`Failed due to Response Status: ${response.status}`);
                 throw Error(`Failed due to Response Status: ${response.status}`);
             }
         });
@@ -93,6 +95,7 @@ class Commmunity {
             if (dialogue !== "") {
                 this.prompt = this.prompt + ` ${dialogue}\n\n`;
                 this.conversationHistory.push(`${speaker.name}: ${dialogue}`);
+                logger_1.logger.info(`${speaker.name}: ${dialogue}\n`);
                 console.log(`${speaker.name}: ${dialogue}\n`);
                 // delay
                 yield (0, delay_1.delay)(constants_1.TALK_DELAY);
@@ -142,6 +145,7 @@ class Commmunity {
             if (this.prompt === "")
                 yield this.initRandomTopic();
             while (this.members.length != 0) {
+                // logger.debug("members:", this.members.length);
                 console.log("members:", this.members.length);
                 // Randomly select an action
                 const [action] = this.naturalAction
@@ -159,6 +163,8 @@ class Commmunity {
                 }
                 if (!this.naturalAction && !NATURAL_ACTIONS.includes(action))
                     this.naturalAction = true;
+                // Prompt, members and action logger
+                logger_1.logger.debug({ "members": this.members.length, "action:": action, "prompt:": this.prompt });
                 switch (action) {
                     case actions_1.Actions.TALK:
                         for (let i = 0; i < constants_1.TALK_BATCH_SIZE; i++) {

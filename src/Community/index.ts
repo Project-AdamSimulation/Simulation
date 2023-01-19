@@ -12,7 +12,7 @@ import {
 import { Actions } from "./actions";
 import { delay } from "./helpers/delay";
 import { generateRandomTopic } from "./helpers/genRandTopic";
-
+import { logger } from "./helpers/logger";
 const NATURAL_ACTIONS = [Actions.TALK];
 const POSSIBLE_ACTIONS = [Actions.ADD, Actions.REMOVE, Actions.CHANGE];
 
@@ -72,6 +72,7 @@ class Commmunity {
       const dialogue = response.data.choices[0].text;
       return dialogue!.substring(1);
     } else {
+      logger.error(`Failed due to Response Status: ${response.status}`);
       throw Error(`Failed due to Response Status: ${response.status}`);
     }
   }
@@ -97,6 +98,7 @@ class Commmunity {
       this.prompt = this.prompt + ` ${dialogue}\n\n`;
 
       this.conversationHistory.push(`${speaker.name}: ${dialogue}`);
+      logger.info(`${speaker.name}: ${dialogue}\n`);
       console.log(`${speaker.name}: ${dialogue}\n`);
 
       // delay
@@ -143,7 +145,9 @@ class Commmunity {
   public async simulate() {
     if (this.prompt === "") await this.initRandomTopic();
     while (this.members.length != 0) {
+      // logger.debug("members:", this.members.length);
       console.log("members:", this.members.length);
+      
       // Randomly select an action
       const [action] = this.naturalAction
         ? randomSelection(NATURAL_ACTIONS, 1)
@@ -163,7 +167,8 @@ class Commmunity {
 
       if (!this.naturalAction && !NATURAL_ACTIONS.includes(action))
         this.naturalAction = true;
-
+      // Prompt, members and action logger
+      logger.debug({"members": this.members.length, "action:": action, "prompt:": this.prompt});
       switch (action) {
         case Actions.TALK:
           for (let i = 0; i < TALK_BATCH_SIZE; i++) {
