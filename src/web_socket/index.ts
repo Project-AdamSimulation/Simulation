@@ -16,6 +16,8 @@ export default function createWebSocket() {
   });
 
   wss.on("connection", (ws) => {
+    console.log("Connection Established");
+
     ws.on("message", (data: string) => {
       try {
         const rawHumans = JSON.parse(data);
@@ -37,7 +39,7 @@ export default function createWebSocket() {
 
         community.simulate();
       } catch (e) {
-        console.log("error while parsing json", e);
+        console.log("Error while parsing json");
       }
     });
 
