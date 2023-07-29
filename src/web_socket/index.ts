@@ -31,6 +31,7 @@ export default function createWebSocket() {
           );
 
         const community = new Commmunity(humans, (speakerName, dialogue) => {
+          console.log(`${speakerName}: ${dialogue}`);
           ws.send(`${speakerName}: ${dialogue}`);
         });
 
