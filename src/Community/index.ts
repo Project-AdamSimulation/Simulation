@@ -23,14 +23,18 @@ class Commmunity {
   private conversationHistory: string[] = [];
   private naturalAction = true;
   private naturalActionCount = 0;
+  private onTalk: (speakerName: string, dialogue: string) => void;
 
   public constructor(
     possibleMembers: Human[],
-    initialMembers?: Human[],
-    topic?: string
+    onTalk: (speakerName: string, dialogue: string) => void,
+    topic?: string,
+    initialMembers?: Human[]
   ) {
     this.possibleMembers = possibleMembers;
-    if (!initialMembers) initialMembers = randomSelection(possibleMembers);
+    this.onTalk = onTalk;
+    if (!initialMembers || initialMembers.length == 0)
+      initialMembers = randomSelection(possibleMembers);
     this.members = initialMembers;
     if (topic)
       this.prompt = COMMUNITY_INIT({
@@ -77,7 +81,10 @@ class Commmunity {
           throw Error(`Failed due to Response Status: ${response.status}`);
         }
       } catch (e) {
-        console.log("Error occured while fetching response, trying again ....");
+        console.log(
+          "Error occured while fetching response, trying again ....",
+          e
+        );
         await delay(TALK_DELAY);
       }
     }
@@ -104,7 +111,8 @@ class Commmunity {
       this.prompt = this.prompt + ` ${dialogue}\n\n`;
 
       this.conversationHistory.push(`${speaker.name}: ${dialogue}`);
-      console.log(`${speaker.name}: ${dialogue}\n`);
+      // console.log(`${speaker.name}: ${dialogue}\n`);
+      this.onTalk(speaker.name, dialogue);
 
       // delay
       await delay(TALK_DELAY);

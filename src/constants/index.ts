@@ -1,5 +1,5 @@
 export const OPENAI_API_KEY =
-  "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";
+  "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";
 
 export const BATCH_SIZE = 4;
 
