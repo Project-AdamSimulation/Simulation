@@ -230,6 +230,7 @@ class Commmunity {
   }
 
   public stopSimulation() {
+    console.log("Stopping Simulation");
     this.runSimulation = false;
   }
 }
