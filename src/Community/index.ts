@@ -58,21 +58,28 @@ class Commmunity {
     // console.log("------------- Prompt ---------------");
     // console.log(this.prompt);
     // console.log("------------------------------------");
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: this.prompt,
-      temperature: 0.9,
-      max_tokens: 2000,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-      stop: ["\n"],
-    });
-    if (response.status == 200) {
-      const dialogue = response.data.choices[0].text;
-      return dialogue!.substring(1);
-    } else {
-      throw Error(`Failed due to Response Status: ${response.status}`);
+    while (true) {
+      try {
+        const response = await openai.createCompletion({
+          model: "text-davinci-003",
+          prompt: this.prompt,
+          temperature: 0.9,
+          max_tokens: 2000,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+          stop: ["\n"],
+        });
+        if (response.status == 200) {
+          const dialogue = response.data.choices[0].text;
+          return dialogue!.substring(1);
+        } else {
+          throw Error(`Failed due to Response Status: ${response.status}`);
+        }
+      } catch (e) {
+        console.log("Error occured while fetching response, trying again ....");
+        await delay(TALK_DELAY);
+      }
     }
   }
 
@@ -117,7 +124,7 @@ class Commmunity {
   }
 
   public async remove(pointMaker: Human, others: Human[]) {
-    this.members.filter(
+    this.members = this.members.filter(
       (member) =>
         member.name != pointMaker.name &&
         others.every((other) => member.name != other.name)
@@ -143,7 +150,7 @@ class Commmunity {
   public async simulate() {
     if (this.prompt === "") await this.initRandomTopic();
     while (this.members.length != 0) {
-      console.log("members:", this.members.length);
+      // console.log("members:", this.members.length);
       // Randomly select an action
       const [action] = this.naturalAction
         ? randomSelection(NATURAL_ACTIONS, 1)

@@ -54,22 +54,30 @@ class Commmunity {
             // console.log("------------- Prompt ---------------");
             // console.log(this.prompt);
             // console.log("------------------------------------");
-            const response = yield openAI_1.default.createCompletion({
-                model: "text-davinci-003",
-                prompt: this.prompt,
-                temperature: 0.9,
-                max_tokens: 2000,
-                top_p: 1,
-                frequency_penalty: 0,
-                presence_penalty: 0,
-                stop: ["\n"],
-            });
-            if (response.status == 200) {
-                const dialogue = response.data.choices[0].text;
-                return dialogue.substring(1);
-            }
-            else {
-                throw Error(`Failed due to Response Status: ${response.status}`);
+            while (true) {
+                try {
+                    const response = yield openAI_1.default.createCompletion({
+                        model: "text-davinci-003",
+                        prompt: this.prompt,
+                        temperature: 0.9,
+                        max_tokens: 2000,
+                        top_p: 1,
+                        frequency_penalty: 0,
+                        presence_penalty: 0,
+                        stop: ["\n"],
+                    });
+                    if (response.status == 200) {
+                        const dialogue = response.data.choices[0].text;
+                        return dialogue.substring(1);
+                    }
+                    else {
+                        throw Error(`Failed due to Response Status: ${response.status}`);
+                    }
+                }
+                catch (e) {
+                    console.log("Error occured while fetching response, trying again ....");
+                    yield (0, delay_1.delay)(constants_1.TALK_DELAY);
+                }
             }
         });
     }
@@ -116,7 +124,7 @@ class Commmunity {
     }
     remove(pointMaker, others) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.members.filter((member) => member.name != pointMaker.name &&
+            this.members = this.members.filter((member) => member.name != pointMaker.name &&
                 others.every((other) => member.name != other.name));
             this.prompt =
                 this.prompt +
