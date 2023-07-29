@@ -23,6 +23,7 @@ class Commmunity {
   private conversationHistory: string[] = [];
   private naturalAction = true;
   private naturalActionCount = 0;
+  private runSimulation = false;
   private onTalk: (speakerName: string, dialogue: string) => void;
 
   public constructor(
@@ -81,10 +82,7 @@ class Commmunity {
           throw Error(`Failed due to Response Status: ${response.status}`);
         }
       } catch (e) {
-        console.log(
-          "Error occured while fetching response, trying again ....",
-          e
-        );
+        console.log("Error occured while fetching response, trying again ....");
         await delay(TALK_DELAY);
       }
     }
@@ -156,8 +154,9 @@ class Commmunity {
   }
 
   public async simulate() {
+    this.runSimulation = true;
     if (this.prompt === "") await this.initRandomTopic();
-    while (this.members.length != 0) {
+    while (this.members.length != 0 && this.runSimulation) {
       // console.log("members:", this.members.length);
       // Randomly select an action
       const [action] = this.naturalAction
@@ -228,6 +227,10 @@ class Commmunity {
           break;
       }
     }
+  }
+
+  public stopSimulation() {
+    this.runSimulation = false;
   }
 }
 

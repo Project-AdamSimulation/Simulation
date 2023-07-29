@@ -17,6 +17,7 @@ export default function createWebSocket() {
 
   wss.on("connection", (ws) => {
     console.log("Connection Established");
+    let community: Commmunity | undefined = undefined;
 
     ws.on("message", (data: string) => {
       try {
@@ -32,7 +33,7 @@ export default function createWebSocket() {
             )
           );
 
-        const community = new Commmunity(humans, (speakerName, dialogue) => {
+        community = new Commmunity(humans, (speakerName, dialogue) => {
           console.log(`${speakerName}: ${dialogue}`);
           ws.send(`${speakerName}: ${dialogue}`);
         });
@@ -44,10 +45,12 @@ export default function createWebSocket() {
     });
 
     ws.on("error", (error) => {
+      if (community) community.stopSimulation();
       console.error("WebSocket error:", error);
     });
 
     ws.on("close", () => {
+      if (community) community.stopSimulation();
       console.log("WebSocket connection closed");
     });
   });
