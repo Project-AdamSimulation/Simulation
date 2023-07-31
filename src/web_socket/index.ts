@@ -24,14 +24,7 @@ export default function createWebSocket() {
         const rawHumans = JSON.parse(data);
         const humans: Human[] = [];
         for (let rawHuman of rawHumans)
-          humans.push(
-            new Human(
-              rawHuman.name,
-              rawHuman.description
-                .map((desc: string, i: number) => `${i + 1}. ${desc}`)
-                .join("\n")
-            )
-          );
+          humans.push(new Human(rawHuman.name, rawHuman.description));
 
         community = new Commmunity(humans, (speakerName, dialogue) => {
           console.log(`${speakerName}: ${dialogue}`);
