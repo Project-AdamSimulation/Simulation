@@ -41,7 +41,7 @@ While the project itself does have limited practical use, We still worked on it 
 
 Here is an example of a conversation between 5 members in a group.
 
-<img width="1100" alt="Screenshot 2023-08-22 at 3 35 03 PM" src="https://github.com/Project-AdamSimulation/adam-frontend/assets/83650351/8f22b51f-db9a-456f-b9a4-d5bf6735707a">
+<img width="577" alt="Screen Shot 2023-09-08 at 4 25 39 PM" src="https://github.com/Project-AdamSimulation/Simulation/assets/49199047/07b29918-6245-48dc-8bf3-cd35ab3b15ad">
 
 ## Contributors
   1. [Lakshya Gupta](https://github.com/laytoder)
