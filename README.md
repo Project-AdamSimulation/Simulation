@@ -11,6 +11,28 @@ Adam Simulation is a **Thought Simulator that chains conversational LLM Thoughts
   2. After adding the names and descriptions for all the members, the user can click the submit button to start the simulation.
 The project then runs the simulation on a backend server which streams the conversation to the frontend using a websocket connection.
 
+## Run the backend locally
+
+1. Generate your `<OPENAI API KEY>` from the [Open AI API](https://openai.com/blog/openai-api) and paste it in [/src/constants/index.ts](/src/constants/index.ts):
+
+   ```bash
+   export const OPENAI_API_KEY = "<OPENAI API KEY>";
+
+2. Install the required dependencies:
+
+   ```bash
+   yarn
+
+3. To test the simulation edit the topic and members in a group in [/src/test.ts](/src/test.ts), then run:
+
+   ```bash
+   yarn test
+
+4. To run the Backend Websocket Server:
+
+   ```bash
+   yarn dev
+
 ## Some Backstory
 
 [Lakshya Gupta](https://github.com/laytoder) and [Aadeesh Sharma](https://github.com/Aaddy-1) had the idea for this project when they were thinking about **train of thought**, and how one thought can lead to other eventually inventing novel ideas. We wanted to replicate that process using an LLM such as **OpenAI's GPT-3** by enabling the LLM to talk to itself.
